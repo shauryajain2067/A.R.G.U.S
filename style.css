@@ -64,7 +64,7 @@ body {
 
 /* MAIN DOCUMENT CONTAINER */
 .container {
-  max-width: 920px;
+  max-width: 950px;
   margin: 40px auto;
   background-color: var(--card-bg);
   padding: 50px 60px;
@@ -96,12 +96,6 @@ h3 {
   margin-top: 25px;
 }
 
-h4 {
-  font-size: 15px;
-  color: var(--text-dark);
-  margin-top: 20px;
-}
-
 p, li {
   font-size: 15px;
 }
@@ -131,7 +125,7 @@ li {
 
 .doc-meta td {
   padding: 4px 8px;
-  font-size: 13px;
+  font-size: 13.5px;
   border: none;
   background: transparent;
 }
@@ -139,23 +133,29 @@ li {
 .doc-meta td.label {
   font-weight: bold;
   color: var(--text-dark);
-  width: 180px;
+  width: 160px;
 }
 
-/* TABLES (BOM & INTERCONNECT MATRIX) */
+/* TABLES (BOM & HARDWARE MATRICES) */
 table {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
   font-size: 13.5px;
-  overflow-x: auto;
   display: table;
+}
+
+/* Prevent wide BOM tables from breaking layout on smaller screens */
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
 }
 
 th, td {
   border: 1px solid var(--border-color);
-  padding: 10px 12px;
+  padding: 12px;
   text-align: left;
+  vertical-align: top;
 }
 
 th {
@@ -226,6 +226,7 @@ code {
     page-break-after: avoid;
   }
 
+  /* Ensures complex BOM tables and code blocks don't split awkwardly across PDF pages */
   table, pre, .callout, .mermaid {
     page-break-inside: avoid;
   }

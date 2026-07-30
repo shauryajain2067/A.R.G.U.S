@@ -1,7 +1,7 @@
-// main.js - Project TRISHUL Client Logic & PDF Export Controller
+// main.js - Project A.R.G.U.S Client Logic & PDF Export Controller
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Mermaid Diagrams
+  // 1. Initialize Mermaid.js Diagrams for System Architecture
   if (typeof mermaid !== 'undefined') {
     mermaid.initialize({
       startOnLoad: true,
@@ -14,11 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Bind PDF Download Trigger Button
+  // 2. Bind PDF Download Trigger to Action Bar Button
   const pdfBtn = document.getElementById('pdfBtn');
   if (pdfBtn) {
     pdfBtn.addEventListener('click', () => {
-      // Ensure MathJax renders all LaTeX vectors prior to opening print engine
+      // Ensure MathJax renders all LaTeX vectors and formulas prior to opening print engine
+      // Prevents formulas from showing up as raw '$...$' in the exported PDF.
       if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
         MathJax.typesetPromise()
           .then(() => {
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
           })
           .catch((err) => {
             console.warn('MathJax typesetting error prior to print:', err);
-            window.print();
+            window.print(); // Fallback to print even if MathJax throws a warning
           });
       } else {
         window.print();
