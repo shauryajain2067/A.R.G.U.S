@@ -1,159 +1,237 @@
-/* styles.css - Project TRISHUL Visual Identity */
-
 :root {
-    --primary: #0284c7;
-    --primary-dark: #0369a1;
-    --bg-main: #f8fafc;
-    --text-main: #334155;
-    --text-dark: #0f172a;
-    --card-bg: #ffffff;
-    --border-color: #e2e8f0;
-    --code-bg: #1e293b;
-    --code-text: #f8fafc;
+  --primary: #0284c7;
+  --primary-dark: #0369a1;
+  --bg-main: #f8fafc;
+  --text-main: #334155;
+  --text-dark: #0f172a;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --code-bg: #1e293b;
+  --code-text: #f8fafc;
+  --accent-green: #10b981;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
-/* ACTION BAR & BUTTON */
+/* STICKY TOP ACTION BAR */
 .action-bar {
-    position: sticky;
-    top: 0;
-    background-color: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(8px);
-    color: #ffffff;
-    padding: 12px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1000;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .action-bar .title {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #38bdf8;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #38bdf8;
 }
 
 .btn-pdf {
-    background-color: var(--primary);
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s, transform 0.1s;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .btn-pdf:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-1px);
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
 }
 
-/* REPORT CONTAINER */
+/* MAIN DOCUMENT CONTAINER */
 .container {
-    max-width: 900px;
-    margin: 40px auto;
-    background-color: var(--card-bg);
-    padding: 60px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  max-width: 920px;
+  margin: 40px auto;
+  background-color: var(--card-bg);
+  padding: 50px 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
 /* TYPOGRAPHY */
-h1 { font-size: 28px; color: var(--text-dark); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0; }
-h2 { font-size: 22px; color: var(--text-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 40px; }
-h3 { font-size: 18px; color: var(--primary-dark); margin-top: 25px; }
-h4 { font-size: 15px; color: var(--text-dark); margin-top: 20px; }
+h1 {
+  font-size: 26px;
+  color: var(--text-dark);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 10px;
+  margin-top: 0;
+}
 
-p, li { font-size: 15px; }
-ul, ol { padding-left: 20px; }
+h2 {
+  font-size: 20px;
+  color: var(--text-dark);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-top: 40px;
+}
 
-/* META INFO BLOCK */
+h3 {
+  font-size: 17px;
+  color: var(--primary-dark);
+  margin-top: 25px;
+}
+
+h4 {
+  font-size: 15px;
+  color: var(--text-dark);
+  margin-top: 20px;
+}
+
+p, li {
+  font-size: 15px;
+}
+
+ul, ol {
+  padding-left: 22px;
+}
+
+li {
+  margin-bottom: 6px;
+}
+
+/* DOCUMENT METADATA BLOCK */
 .doc-meta {
-    background-color: #f1f5f9;
-    border-left: 4px solid var(--primary);
-    padding: 15px;
-    margin-bottom: 30px;
-    border-radius: 0 6px 6px 0;
+  background-color: #f1f5f9;
+  border-left: 4px solid var(--primary);
+  padding: 15px 18px;
+  margin-bottom: 30px;
+  border-radius: 0 6px 6px 0;
 }
-.doc-meta table { width: 100%; border-collapse: collapse; }
-.doc-meta td { padding: 4px 8px; font-size: 13px; border: none; }
-.doc-meta td.label { font-weight: bold; color: var(--text-dark); width: 180px; }
 
-/* TABLES */
+.doc-meta table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.doc-meta td {
+  padding: 4px 8px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+}
+
+.doc-meta td.label {
+  font-weight: bold;
+  color: var(--text-dark);
+  width: 180px;
+}
+
+/* TABLES (BOM & INTERCONNECT MATRIX) */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 14px;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 13.5px;
+  overflow-x: auto;
+  display: table;
 }
+
 th, td {
-    border: 1px solid var(--border-color);
-    padding: 10px 12px;
-    text-align: left;
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  text-align: left;
 }
+
 th {
-    background-color: #f8fafc;
-    color: var(--text-dark);
-    font-weight: 600;
+  background-color: #f8fafc;
+  color: var(--text-dark);
+  font-weight: 600;
 }
-tr:nth-child(even) { background-color: #f8fafc; }
+
+tr:nth-child(even) {
+  background-color: #f8fafc;
+}
 
 /* CODE BLOCKS */
 pre {
-    background-color: var(--code-bg);
-    color: var(--code-text);
-    padding: 16px;
-    border-radius: 6px;
-    overflow-x: auto;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    font-size: 13px;
-    line-height: 1.5;
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  padding: 18px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid #334155;
+}
+
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 
 /* CALLOUT BOXES */
 .callout {
-    background-color: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-left: 4px solid var(--primary);
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 4px;
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-left: 4px solid var(--primary);
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 4px;
+  font-size: 14.5px;
 }
 
+/* MERMAID DIAGRAM CENTERING */
 .mermaid {
-    display: flex;
-    justify-content: center;
-    margin: 25px 0;
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
 }
 
-/* PRINT MEDIA STYLES (PDF GENERATOR RULES) */
+/* PRINT & PDF ENGINE RULES */
 @media print {
-    .no-print { display: none !important; }
-    body { background-color: #ffffff; color: #000000; padding: 0; }
-    .container {
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
-        box-shadow: none;
-    }
-    h1, h2, h3 { page-break-after: avoid; }
-    table, pre, .callout, .mermaid { page-break-inside: avoid; }
-    a { color: #000000; text-decoration: none; }
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background-color: #ffffff;
+    color: #000000;
+  }
+  
+  .container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  table, pre, .callout, .mermaid {
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: none;
+  }
 }
