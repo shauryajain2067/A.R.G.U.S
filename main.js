@@ -1,31 +1,36 @@
-// script.js - Project TRISHUL Site Interactions
+// main.js - Project TRISHUL Client Logic & PDF Export Controller
 
-// Configure Mermaid for Diagrams
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof mermaid !== 'undefined') {
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'neutral',
-            securityLevel: 'loose',
-            flowchart: {
-                useMaxWidth: true,
-                htmlLabels: true
-            }
-        });
-    }
+  // 1. Initialize Mermaid Diagrams
+  if (typeof mermaid !== 'undefined') {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      securityLevel: 'loose',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true
+      }
+    });
+  }
 
-    // Handle PDF Print Button Click
-    const pdfBtn = document.getElementById('pdfBtn');
-    if (pdfBtn) {
-        pdfBtn.addEventListener('click', () => {
-            // Check if MathJax is finished rendering to prevent incomplete PDFs
-            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-                MathJax.typesetPromise().then(() => {
-                    window.print();
-                });
-            } else {
-                window.print();
-            }
-        });
-    }
+  // 2. Bind PDF Download Trigger Button
+  const pdfBtn = document.getElementById('pdfBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', () => {
+      // Ensure MathJax renders all LaTeX vectors prior to opening print engine
+      if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+        MathJax.typesetPromise()
+          .then(() => {
+            window.print();
+          })
+          .catch((err) => {
+            console.warn('MathJax typesetting error prior to print:', err);
+            window.print();
+          });
+      } else {
+        window.print();
+      }
+    });
+  }
 });
