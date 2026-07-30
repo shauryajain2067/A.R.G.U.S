@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROJECT TRISHUL - Master Technical Specification</title>
+
+<!-- External Stylesheet -->
+<link rel="stylesheet" href="styles.css">
+
+<!-- MathJax for LaTeX Equations -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<!-- Mermaid.js for Visual Diagrams -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<!-- TOP ACTION BAR -->
+<div class="action-bar no-print">
+  <div class="title">PROJECT TRISHUL — Technical Reference Manual</div>
+  <button id="pdfBtn" class="btn-pdf">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    Save Report as PDF
+  </button>
+</div>
+
+<!-- MAIN REPORT CONTAINER -->
+<div class="container">
+
+  <h1>PROJECT TRISHUL: MASTER TECHNICAL SPECIFICATION & SYSTEM ARCHITECTURE REPORT</h1>
+
+  <div class="doc-meta">
+    <table>
+      <tr><td class="label">Document Version:</td><td>3.0 (Publication Ready)</td></tr>
+      <tr><td class="label">Target Platform:</td><td>Tactical Unmanned Ground Vehicle (UGV) for Hazard Reconnaissance</td></tr>
+      <tr><td class="label">Core Processor:</td><td>Espressif ESP32-S3 Dual-Core Xtensa LX7 @ 240MHz</td></tr>
+      <tr><td class="label">Primary Paradigm:</td><td>Deterministic 360-Degree Swept Time-of-Flight (ToF) Spatial Mapping</td></tr>
+    </table>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2>1. EXECUTIVE SUMMARY & PARADIGM SHIFT</h2>
+
+  <h3>1.1 The Failure of Probabilistic Scanning Architecture</h3>
+  <p>Standard low-cost hazard scouting prototypes (including legacy systems relying on simple Ultrasonic and Infrared sensors) suffer from a fundamental flaw: <strong>Acoustic and Spatial Ambiguity</strong>. Ultrasonic sensors emit wide, blurry cones that cannot detect diagonal hazards or narrow obstacles. This results in the software outputting only a statistical guess of obstacle presence.</p>
+  
+  <p>For tactical first responders, bomb disposal technicians, and defense personnel, a statistical guess is useless—they require high-fidelity spatial verification to confirm a safe path or identify hidden physical components before human entry. Commercial defense-grade LiDAR robots achieve this fidelity but cost upwards of <strong>₹50 Lakhs to ₹80 Lakhs</strong>.</p>
+
+  <h3>1.2 The TRISHUL Deterministic Solution</h3>
+  <p>Project TRISHUL replaces statistical estimation with a <strong>Frugal Swept Solid-State LiDAR Engine</strong>. The breakthrough architecture involves hooking four VL53L1X high-precision Time-of-Flight (ToF) laser distance sensors to four separate MG90S metal-gear servos—one assembly per quadrant of the robot chassis.</p>
+
+  <p>When the UGV stops to perform a scan, the ESP32-S3 executes a synchronous, high-speed swept acquisition, moving the four servos simultaneously in lockstep. This generates a crisp, high-density, $360^\circ$ spatial point cloud around the robot base. Path determination is calculated against a clean deterministic grid of actual physical points, rather than a blurry probability area. This allows TRISHUL to deliver LiDAR functionality for **under ₹6,000**, a $100\times$ cost disruption.</p>
+
+  <!-- SECTION 2 -->
+  <h2>2. APPLIED PHYSICS & APPLIED MATHEMATICS OF THE SENSOR PAYLOAD</h2>
+
+  <h3>2.1 Applied Physics: 360-Degree Swept ToF Array Mechanics</h3>
+  
+  <div class="mermaid">
+  graph TD
+      subgraph HEAD[ToF Sensing Head (x4)]
+          TOF[VL53L1X Solid-State ToF]
+          SERVO[MG90S Servo]
+          BASE[Robot Chassis Quadrant Mount]
+          SERVO --- BASE
+          SERVO --- TOF
+      end
+
+      HEAD --> Physics[Applied Physics]
+      HEAD --> Math[Applied Math]
+
+      Physics --> Photon[Photon ToF & Photon Counting]
+      Physics --> Optical[Tight Field of View - FoV]
+      Math --> Polar[r, θ Polar Data Point]
+      Math --> Cartesian[x, y Cartesian Transformation]
+  </div>
+
+  <h4>VL53L1X Solid-State ToF Physics</h4>
+  <p>Each of the four sensors operates via **Solid-State Time-of-Flight (ToF)** photonics. Hidden inside the $4.9\text{mm}$ package is a **940nm Vertical Cavity Surface Emitting Laser (VCSEL)**. The chip emits a synchronized pulse of invisible laser photons. An integrated array of **Single Photon Avalanche Diodes (SPADs)** acts as a digital photon counter, measuring the exact picosecond latency of the reflected photons.</p>
+
+  <p>Unlike broad ultrasonic acoustic cones, the ToF sensor projects a focused infrared beam with a variable, tight Field of View ($\text{FoV}$), allowing it to isolate specific spatial features (such as a concealed weaponized device enclosure) rather than just averaging the area.</p>
+
+  <h4>Mechanically Swept Lidar Mechanics</h4>
+  <p>To convert this solid-state point sensor into a $360^\circ$ LiDAR, the sensor is mounted to the MG90S servo. By controlling the high-frequency alternating magnetic field in the servo's internal DC motor, the sensor head is swept across a specific $90^\circ$ arc relative to its mount. A full spatial scan splits the workload into four parallel $90^\circ$ sweeps executed synchronously by the microcontroller.</p>
+
+  <h3>2.2 Applied Mathematics: Spatial Coordinate Transformations</h3>
+
+  <h4>Polar Data Acquisition</h4>
+  <p>Each swept sensor assembly acquisitions data in **Polar Coordinates $(r, \theta)$**. The sensor returns a direct distance measurement ($r$) to the obstacle at a specific global sweep angle ($\theta_{\text{global}}$). The global angle must compensate for the robot's heading and the sensor's mounting offset on the chassis:</p>
+
+  $$\theta_{\text{global}} = \theta_{\text{robot\_heading}} + \theta_{\text{quadrant\_offset}} + \theta_{\text{servo\_sweep}}$$
+
+  <p>Where $\theta_{\text{quadrant\_offset}}$ is Front ($0^\circ$), Right ($90^\circ$), Back ($180^\circ$), or Left ($270^\circ$).</p>
+
+  <h4>Cartesian Grid Transformation ($x, y$)</h4>
+  <p>To build a flat obstacle map used for point-to-point navigation, the polar data points $(r, \theta)$ are transformed into **Cartesian Coordinates $(x, y)$** relative to the robot's static center point $(0,0)$:</p>
+
+  $$x = r \times \cos(\theta_{\text{global}})$$
+  $$y = r \times \sin(\theta_{\text{global}})$$
+
+  <p>By executing this transformation hundreds of times per second across the four parallel swept quadrants, the ESP32-S3 populates a 2D occupancy grid array representing the free and blocked space in the surrounding environment.</p>
+
+  <!-- SECTION 3 -->
+  <h2>3. SYSTEM ARCHITECTURE & ESP32-S3 OPTIMIZATION</h2>
+
+  <h3>3.1 Architectural Selection: ESP32-S3 vs. Single-Core MCUs</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Architectural Metric</th>
+        <th>Arduino Nano</th>
+        <th>STM32 "Blue Pill"</th>
+        <th>ESP32-S3 (SELECTED)</th>
+      }
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>CPU Architecture</strong></td>
+        <td>8-bit AVR</td>
+        <td>32-bit ARM Cortex-M3</td>
+        <td><strong>32-bit Xtensa LX7 Dual-Core</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Clock Frequency</strong></td>
+        <td>16 MHz</td>
+        <td>72 MHz</td>
+        <td><strong>240 MHz</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Wireless Radios</strong></td>
+        <td>❌ None</td>
+        <td>❌ None</td>
+        <td><strong>Native Wi-Fi 4 + BLE 5 + ESP-NOW</strong></td>
+      </tr>
+      <tr>
+        <td><strong>FreeRTOS Dual-Core</strong></td>
+        <td>❌ Impossible</td>
+        <td>❌ Impossible (Stock MCU)</td>
+        <td><strong>YES (Core 1 handles High-Speed Control; Core 0 handles Comms)</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Mapping Advantage</strong></td>
+        <td>❌ No memory</td>
+        <td>❌ No radio</td>
+        <td><strong>Dedicated Core for Real-Time Path Planning</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 Dual-Core Task Allocation & Memory Math</h3>
+  <p>The ESP32-S3 completely eliminates the problem of **HTTP blocking latency**. Single-core chips like the Arduino Nano pause their main control loop to process incoming network packets, which would crash the robot or miss critical ToF data during a high-speed servo sweep.</p>
+
+  <p>FreeRTOS splits the workload on the ESP32-S3:</p>
+  <ul>
+    <li><strong>Core 0 (Network Engine):</strong> executes the background Wi-Fi stack, processes asynchronous HTTP web dashboard requests from the operator's handheld remote, and broadcasts raw ESP-NOW telemetry packets.</li>
+    <li><strong>Core 1 (High-Speed Control Engine):</strong> executes the 4-servo synchronous PWM sweeps, polls the four ToF laser sensors at $100\text{Hz}$, performs the complex $r \cos \theta$ floating-point mathematics, and populates the 2D spatial grid array.</li>
+  </ul>
+
+  <h4>2D Occupancy Grid Memory Footprint</h4>
+  <p>To map a $10\text{ m} \times 10\text{ m}$ room using a standard $10\text{ cm}$ cell resolution, the UGV requires a 2D matrix of $100 \times 100$ bytes. A $100 \times 100$ byte matrix occupies only <strong>10 KB of SRAM</strong>. The ESP32-S3 DevKit provides $512\text{ KB}$ SRAM (plus potentially $8\text{ MB}$ PSRAM), making the mapping memory footprint negligible ($< 2\%$) and proving the scalability of this frugal spatial matrix architecture.</p>
+
+  <!-- SECTION 4 -->
+  <h2>4. COMPLETE SCHEMATIC & HARDWARE SPECIFICATIONS</h2>
+
+  <div class="mermaid">
+  graph TD
+      subgraph POWER[Power Subsystem]
+          LIPO[3S 11.1V LiPo Battery] -->|Master Switch| PWR_BUS[11.1V Raw Bus]
+          PWR_BUS -->|11.1V| BUCK[LM2596 5V Buck]
+          PWR_BUS -->|11.1V| L298N[L298N Motor Driver VMS]
+          BUCK -->|Regulated 5V| ESP_5V[ESP32-S3 5V/VIN Pin]
+          BUCK -->|Regulated 5V| SERVO_PWR[4x MG90S Servo VCC]
+          ESP_5V -->|Internal 3.3V LDO| TOF_PWR[4x ToF Sensor VCC]
+      end
+
+      subgraph MCU[ESP32-S3 Master Brain]
+          ESP_5V
+          TOF_PWR
+      end
+
+      subgraph LIDAR[Frugal LiDAR Array]
+          TOF_PWR -->|3.3V| TOF1[VL53L1X (Front Left)]
+          TOF_PWR -->|3.3V| TOF2[VL53L1X (Front Right)]
+          TOF_PWR -->|3.3V| TOF3[VL53L1X (Rear Right)]
+          TOF_PWR -->|3.3V| TOF4[VL53L1X (Rear Left)]
+
+          TOF1 <-->|I2C SDA / SCL (Shared Bus)| MCU
+          TOF2 <-->|I2C SDA / SCL (Shared Bus)| MCU
+          TOF3 <-->|I2C SDA / SCL (Shared Bus)| MCU
+          TOF4 <-->|I2C SDA / SCL (Shared Bus)| MCU
+
+          MCU -->|GPIO 33 Digital Out| XSHUT1[XSHUT (Front Left ToF)]
+          MCU -->|GPIO 34 Digital Out| XSHUT2[XSHUT (Front Right ToF)]
+          MCU -->|GPIO 35 Digital Out| XSHUT3[XSHUT (Rear Right ToF)]
+          MCU -->|GPIO 36 Digital Out| XSHUT4[XSHUT (Rear Left ToF)]
+
+          SERVO_PWR -->|5V| S1[MG90S Servo (Front Left)]
+          SERVO_PWR -->|5V| S2[MG90S Servo (Front Right)]
+          SERVO_PWR -->|5V| S3[MG90S Servo (Rear Right)]
+          SERVO_PWR -->|5V| S4[MG90S Servo (Rear Left)]
+
+          MCU -->|GPIO 15 PWM| S1
+          MCU -->|GPIO 16 PWM| S2
+          MCU -->|GPIO 17 PWM| S3
+          MCU -->|GPIO 18 PWM| S4
+      end
+
+      subgraph OTHER[Other I/O]
+          MCU -->|GPIO 20 PWM / DIR| L298N
+          MCU -->|GPIO 7 Signal| BUZZ[3.3V Active Buzzer]
+          MCU -->|GPIO 2 Red / GPIO 3 Green| LEDS[Chassis Status LEDs]
+          MCU <-->|GPIO 10-14 SPI| CC[CC1101 Radio]
+      end
+  </div>
+
+  <h3>4.1 High-current Power Distribution & Noise Mitigation</h3>
+  <p>To make the scan visual and fast, all four servos must move synchronously in lockstep, consuming up to $2.0\text{A}$ of current burst. Drawing this from the ESP32-S3's internal regulator would brown out the microcontroller and reset the entire system. Instead, a dedicated LM2596 switching regulator provides a high-current $5.0\text{V}$ rail for all servos and the ESP32 `VIN` pin. Decoupling ceramic capacitors (Code 104) are placed near the servo power terminal to block high-frequency noise generated by motor brush arcing.</p>
+
+  <h3>4.2 Pin-by-Pin Master Interconnect Table</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Pin Label</th>
+        <th>ESP32-S3 GPIO</th>
+        <th>Voltage</th>
+        <th>Signal Type</th>
+        <th>Notes / BOM Protection</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>LM2596 5V Buck</td><td>OUT+ / OUT-</td><td>5V / VIN & GND</td><td>5.0V DC</td><td>Power Output</td><td>Supplies Servos & MCU Brain</td></tr>
+      <tr><td>L298N Driver</td><td>VMS Terminal</td><td>11.1V Battery (+)</td><td>11.1V Raw</td><td>Power Input</td><td>Powers 4x DC Motors Directly</td></tr>
+      <tr><td>4x ToF Sensors</td><td>SDA / SCL (Shared)</td><td>GPIO 8 / 9</td><td>3.3V Logic</td><td>I2C Shared Bus</td><td>Single parallel I2C connection</td></tr>
+      <tr><td>ToF (Front Left)</td><td>XSHUT</td><td>GPIO 33</td><td>3.3V Logic</td><td>Digital Out</td><td>Pulls Low to Shutdown for address reassignment</td></tr>
+      <tr><td>ToF (Front Right)</td><td>XSHUT</td><td>GPIO 34</td><td>3.3V Logic</td><td>Digital Out</td><td>Pulls Low to Shutdown for address reassignment</td></tr>
+      <tr><td>ToF (Rear Right)</td><td>XSHUT</td><td>GPIO 35</td><td>3.3V Logic</td><td>Digital Out</td><td>Pulls Low to Shutdown for address reassignment</td></tr>
+      <tr><td>ToF (Rear Left)</td><td>XSHUT</td><td>GPIO 36</td><td>3.3V Logic</td><td>Digital Out</td><td>Pulls Low to Shutdown for address reassignment</td></tr>
+      <tr><td>Servo (Front Left)</td><td>PWM (SIG)</td><td>GPIO 15</td><td>5.0V PWM</td><td>Hardware PWM</td><td>High-frequency motor control</td></tr>
+      <tr><td>Servo (Front Right)</td><td>PWM (SIG)</td><td>GPIO 16</td><td>5.0V PWM</td><td>Hardware PWM</td><td>High-frequency motor control</td></tr>
+      <tr><td>Servo (Rear Right)</td><td>PWM (SIG)</td><td>GPIO 17</td><td>5.0V PWM</td><td>Hardware PWM</td><td>High-frequency motor control</td></tr>
+      <tr><td>Servo (Rear Left)</td><td>PWM (SIG)</td><td>GPIO 18</td><td>5.0V PWM</td><td>Hardware PWM</td><td>High-frequency motor control</td></tr>
+      <tr><td>Active Buzzer</td><td>Signal (SIG)</td><td>GPIO 7</td><td>3.3V Logic</td><td>Digital Output</td><td>Direct GPIO 3.3V switching</td></tr>
+      <tr><td>Status LEDs</td><td>Anode (+) Red / Green</td><td>GPIO 2 / 3</td><td>3.3V Logic</td><td>Digital Output</td><td>Series $330\Omega$ resistor to GND</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 5 -->
+  <h2>5. DETERMINISTIC CONTROL ENGINE & EMBEDDED SOFTWARE ARCHITECTURE</h2>
+
+  <h3>5.1 The "Scan-On-Demand" State Machine (Core 1)</h3>
+  <p>The core innovation of the Project TRISHUL software architecture is the dedicated **Stop-and-Scan** workflow executed wirelessly on command.</p>
+  
+  <p>Instead of continuous scanning on the move, a user presses a dedicated **SCAN** button on their handheld remote. This triggers a specific State Machine on the UGV's Core 1 processor:</p>
+  
+  <ol>
+    <li><strong>STAGE 1 [MOTION LOCK]:</strong> CORE 1 immediately applies a PWM brake to all four DC geared motors, bringing the chassis coordinate origin $(0,0)$ to a complete, static halt. This eliminates motion-distortion without SLAM.</li>
+    <li><strong>STAGE 2 [SYNCHRONOUS ACQUISITION]:</strong> CORE 1 executes the synchronous swept scan, moving 4 servos simultaneously in $2^\circ$ lockstep while polling the four ToF laser sensors every $25\text{ms}$. Full $360^\circ$ acqusition takes 1.1 seconds.</li>
+    <li><strong>STAGE 3 [GRID MAPPING]:</strong> CORE 1 converts the Polar $(r, \theta)$ points into Cartesian $(x, y)$ coordinates relative to the static robot base. It populates a byte array acting as an **Occupancy Grid Matrix**. Cells identified with an obstacle point are marked `1`; free space cells are marked `0`.</li>
+    <li><strong>STAGE 4 [WAYPOINT & PATH]:</strong> CORE 1 scans the completed byte grid for open corridors and generates the target waypoint coordinates.</li>
+    <li><strong>STAGE 5 [MOVE-TO-POINT]:</strong> The robot exits the scan state and executes the autonomous point-to-point move using the MPU6050 stability vectors for heading guidance.</li>
+  </ol>
+
+  <h3>5.2 Critical Embedded Implementation Code (C++)</h3>
+
+<pre><code>#include &lt;Arduino.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;esp_now.h&gt;
+#include &lt;Wire.h&gt;
+
+// --- HARDWARE PIN MAPPINGS ---
+#define XSHUT_FRONT_LEFT  33
+#define XSHUT_FRONT_RIGHT 34
+#define XSHUT_REAR_RIGHT  35
+#define XSHUT_REAR_LEFT   36
+
+// --- BOOT-STATE ADDRESS ASSIGNMENT ---
+// All sensors start at address 0x29. We reassign using XSHUT lines.
+void resetToFAddresses() {
+  pinMode(XSHUT_FRONT_LEFT, OUTPUT);
+  pinMode(XSHUT_FRONT_RIGHT, OUTPUT);
+  pinMode(XSHUT_REAR_RIGHT, OUTPUT);
+  pinMode(XSHUT_REAR_LEFT, OUTPUT);
+
+  // Pull all XSHUT low to shutdown every sensor
+  digitalWrite(XSHUT_FRONT_LEFT, LOW);
+  digitalWrite(XSHUT_FRONT_RIGHT, LOW);
+  digitalWrite(XSHUT_REAR_RIGHT, LOW);
+  digitalWrite(XSHUT_REAR_LEFT, LOW);
+  delay(10);
+
+  // Re-enable sensors one-by-one and set new address over I2C
+  enableSensorAndSetAddress(XSHUT_FRONT_LEFT,  0x30);
+  enableSensorAndSetAddress(XSHUT_FRONT_RIGHT, 0x31);
+  enableSensorAndSetAddress(XSHUT_REAR_RIGHT,  0x32);
+  enableSensorAndSetAddress(XSHUT_REAR_LEFT,   0x33);
+}
+
+// --- SYNCHRONOUS SWEEP & ACQUISITION (CORE 1) ---
+// Covers 0 to 90 degrees mechanical servo motion (180 data points)
+void executeSynchronousScan() {
+  const int SERVO_STEP_DEG = 2; // High-density grid steps
+  const int SERVO_SETTLE_MS = 25; // Milliseconds to wait for arm stabilization
+
+  for (int angle = 0; angle &lt;= 90; angle += SERVO_STEP_DEG) {
+    // 1. Write PWM to all 4 servos synchronously (lockstep movement)
+    servoFrontLeft.write(angle);
+    servoFrontRight.write(angle);
+    servoRearRight.write(angle);
+    servoRearLeft.write(angle);
+    
+    // 2. Delay for physical mechanical movement
+    vTaskDelay(pdMS_TO_TICKS(SERVO_SETTLE_MS));
+
+    // 3. Poll all 4 ToF sensors simultaneously (Parallel acquisition)
+    uint16_t dist1 = tofFrontLeft.readRangeSingleMillimeters();
+    uint16_t dist2 = tofFrontRight.readRangeSingleMillimeters();
+    uint16_t dist3 = tofRearRight.readRangeSingleMillimeters();
+    uint16_t dist4 = tofRearLeft.readRangeSingleMillimeters();
+
+    // 4. Store raw polar data into Cartesian conversion logic...
+    convertPolarAndStoreGrid(angle, dist1, dist2, dist3, dist4);
+  }
+}
+</code></pre>
+</div>
+
+</body>
+</html>
